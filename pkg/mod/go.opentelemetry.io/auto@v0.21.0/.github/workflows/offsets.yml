@@ -1,0 +1,31 @@
+name: Automatic Offset Generation
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  updateOffsets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Setup Go
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
+        with:
+          go-version: "~1.24.0"
+          check-latest: true
+          cache-dependency-path: "**/go.sum"
+
+      - name: Update offsets
+        run: make offsets
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@67ccf781d68cd99b580ae25a5c18a1cc84ffff1f # v7
+        with:
+          commit-message: Update generated offsets
+          branch: automated/generated-offsets
+          delete-branch: true
+          title: '[auto] Update generated offsets'
+          body: 'This is an automated PR to update the generated Go field offsets.'
